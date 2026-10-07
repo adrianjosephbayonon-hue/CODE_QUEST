@@ -1,236 +1,170 @@
 import { router } from "expo-router";
 import { useState } from "react";
 import {
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
+
 import { usePlayer } from "../store/player";
 
 export default function FunctionBattleScreen() {
-  const { addRewards } = usePlayer();
+  const { addRewards, unlockAchievement } = usePlayer();
 
-  const [code, setCode] = useState("");
-  const [enemyHp, setEnemyHp] = useState(100);
-  const [message, setMessage] = useState("");
-  const [showHint, setShowHint] = useState(false);
-  const [victory, setVictory] = useState(false);
+  const [answer, setAnswer] = useState("");
+  const [enemyHP, setEnemyHP] = useState(100);
+  const [battleMessage, setBattleMessage] = useState(
+    "The Function Mage is waiting...",
+  );
 
-  const checkAnswer = () => {
-    const normalizedCode = code.replace(/\s+/g, " ").trim();
+  const correctAnswers = [
+    'voidattack(){system.out.println("attack!");}',
+    'staticvoidattack(){system.out.println("attack!");}',
+    "voidattack(){attack();}",
+  ];
 
-    const answerWithoutSpaces = normalizedCode.replace(/\s/g, "").toLowerCase();
+  const normalizeAnswer = (value: string) => {
+    return value.replace(/\s+/g, "").toLowerCase();
+  };
 
-    const correctAnswers = [
-      'voidattack(){system.out.println("attack!");}',
-      'staticvoidattack(){system.out.println("attack!");}',
-      "voidattack(){attack();}",
-    ];
+  const handleAttack = () => {
+    const normalizedAnswer = normalizeAnswer(answer);
 
-    const isCorrect = correctAnswers.includes(answerWithoutSpaces);
+    const isCorrect = correctAnswers.includes(normalizedAnswer);
 
-    if (isCorrect) {
-      const newHp = Math.max(enemyHp - 100, 0);
+    if (!isCorrect) {
+      setBattleMessage("❌ Wrong function! Try again.");
 
-      setEnemyHp(newHp);
+      Alert.alert(
+        "WRONG ANSWER",
+        "Check your method declaration and try again.",
+      );
 
-      setMessage("💥 CORRECT! Your function unleashed a special attack!");
-
-      setShowHint(false);
-
-      if (newHp === 0) {
-        addRewards(125, 60);
-        setVictory(true);
-      }
-    } else {
-      setMessage("❌ WRONG! The Function Mage counterattacks!");
-
-      setShowHint(true);
+      return;
     }
-  };
 
-  const resetBattle = () => {
-    setCode("");
-    setEnemyHp(100);
-    setMessage("");
-    setShowHint(false);
-    setVictory(false);
-  };
+    setEnemyHP(0);
+    setAnswer("");
 
-  /*
-   * VICTORY
-   */
+    setBattleMessage("🧙 Powerful spell! Function Mage defeated!");
 
-  if (victory) {
-    return (
-      <View style={styles.container}>
-        <ScrollView contentContainerStyle={styles.victoryContainer}>
-          <Text style={styles.victoryIcon}>🏆</Text>
+    addRewards(125, 60);
 
-          <Text style={styles.victoryTitle}>VICTORY!</Text>
+    unlockAchievement("function_master");
 
-          <Text style={styles.victoryEnemy}>FUNCTION MAGE DEFEATED</Text>
-
-          <View style={styles.rewardCard}>
-            <Text style={styles.rewardTitle}>REWARDS</Text>
-
-            <Text style={styles.reward}>⭐ +125 XP</Text>
-
-            <Text style={styles.reward}>🪙 +60 COINS</Text>
-          </View>
-
-          <Text style={styles.victoryMessage}>
-            Amazing work!
-            {"\n\n"}
-            You learned how functions allow programmers to create reusable code.
-          </Text>
-
-          <Pressable
-            style={styles.continueButton}
-            onPress={() => router.push("/world")}
-          >
-            <Text style={styles.continueText}>RETURN TO WORLD ➜</Text>
-          </Pressable>
-
-          <Pressable style={styles.retryButton} onPress={resetBattle}>
-            <Text style={styles.retryText}>FIGHT AGAIN</Text>
-          </Pressable>
-        </ScrollView>
-      </View>
+    Alert.alert(
+      "VICTORY!",
+      "You defeated the Function Mage!\n\n+125 XP\n+60 Coins\n🏆 Achievement Unlocked: Function Master",
+      [
+        {
+          text: "CONTINUE",
+          onPress: () => {
+            router.push("/world");
+          },
+        },
+      ],
     );
-  }
-
-  /*
-   * BATTLE
-   */
+  };
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* HEADER */}
-
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <Pressable onPress={() => router.back()}>
             <Text style={styles.backButton}>‹ BACK</Text>
           </Pressable>
 
-          <Text style={styles.headerTitle}>CODING BATTLE</Text>
+          <Text style={styles.headerTitle}>BATTLE</Text>
 
-          <Text style={styles.headerLevel}>LV. 3</Text>
+          <Text style={styles.level}>LV.4</Text>
         </View>
 
-        {/* ENEMY */}
+        <View style={styles.titleSection}>
+          <Text style={styles.battleIcon}>🧙</Text>
 
-        <View style={styles.enemySection}>
-          <Text style={styles.enemyEmoji}>🧙</Text>
+          <Text style={styles.title}>FUNCTION MAGE</Text>
+
+          <Text style={styles.subtitle}>
+            Use a Java method to defeat the mage.
+          </Text>
+        </View>
+
+        <View style={styles.enemyCard}>
+          <Text style={styles.enemyEmoji}>🧙‍♂️</Text>
 
           <Text style={styles.enemyName}>FUNCTION MAGE</Text>
 
-          <Text style={styles.enemyDescription}>
-            "Show me the power of reusable code!"
-          </Text>
+          <Text style={styles.enemyHPText}>HP {enemyHP} / 100</Text>
 
-          {/* HP */}
-
-          <View style={styles.hpContainer}>
-            <Text style={styles.hpLabel}>HP {enemyHp} / 100</Text>
-
-            <View style={styles.hpBarBackground}>
-              <View
-                style={[
-                  styles.hpBar,
-                  {
-                    width: `${enemyHp}%`,
-                  },
-                ]}
-              />
-            </View>
+          <View style={styles.hpBackground}>
+            <View
+              style={[
+                styles.hpBar,
+                {
+                  width: `${enemyHP}%`,
+                },
+              ]}
+            />
           </View>
         </View>
 
-        {/* MESSAGE */}
-
-        {message !== "" && (
-          <View
-            style={[
-              styles.messageBox,
-              showHint ? styles.wrongMessage : styles.correctMessage,
-            ]}
-          >
-            <Text style={styles.messageText}>{message}</Text>
-          </View>
-        )}
-
-        {/* CHALLENGE */}
+        <View style={styles.messageCard}>
+          <Text style={styles.message}>{battleMessage}</Text>
+        </View>
 
         <View style={styles.challengeCard}>
-          <Text style={styles.challengeLabel}>⚔️ CHALLENGE</Text>
+          <Text style={styles.sectionLabel}>CODING CHALLENGE</Text>
 
-          <Text style={styles.challengeText}>
-            Create a function named{" "}
-            <Text style={styles.highlight}>attack()</Text> that prints{" "}
-            <Text style={styles.highlight}>"Attack!"</Text>.
+          <Text style={styles.question}>
+            Create a Java method named attack() that prints "Attack!".
           </Text>
+
+          <View style={styles.codeBox}>
+            <Text style={styles.codeText}>void attack() {"{"}</Text>
+
+            <Text style={styles.codeText}>
+              {"    "}System.out.println("Attack!");
+            </Text>
+
+            <Text style={styles.codeText}>{"}"}</Text>
+          </View>
         </View>
 
-        {/* INPUT */}
+        <View style={styles.answerCard}>
+          <Text style={styles.sectionLabel}>YOUR CODE</Text>
 
-        <Text style={styles.inputLabel}>WRITE YOUR CODE</Text>
+          <TextInput
+            value={answer}
+            onChangeText={setAnswer}
+            placeholder="Type your Java code..."
+            placeholderTextColor="#64748b"
+            style={styles.input}
+            multiline
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
 
-        <TextInput
-          style={styles.codeInput}
-          value={code}
-          onChangeText={setCode}
-          placeholder={'void attack() { System.out.println("Attack!"); }'}
-          placeholderTextColor="#6b7280"
-          multiline
-          autoCapitalize="none"
-          autoCorrect={false}
-          textAlignVertical="top"
-        />
+          <Pressable style={styles.attackButton} onPress={handleAttack}>
+            <Text style={styles.attackButtonText}>🪄 CAST SPELL</Text>
+          </Pressable>
+        </View>
 
-        {/* HINT */}
+        <View style={styles.rewardCard}>
+          <Text style={styles.rewardTitle}>VICTORY REWARD</Text>
 
-        {showHint && (
-          <View style={styles.hintCard}>
-            <Text style={styles.hintTitle}>💡 HINT</Text>
+          <View style={styles.rewardRow}>
+            <Text style={styles.reward}>⭐ +125 XP</Text>
 
-            <Text style={styles.hintText}>Your function needs:</Text>
-
-            <Text style={styles.hintText}>• A return type</Text>
-
-            <Text style={styles.hintText}>• The name attack</Text>
-
-            <Text style={styles.hintText}>• Parentheses ()</Text>
-
-            <Text style={styles.hintText}>• Curly braces {"{ }"}</Text>
-
-            <Text style={styles.hintText}>• A print statement</Text>
-
-            <View style={styles.exampleCode}>
-              <Text style={styles.exampleText}>{"void attack() {"}</Text>
-
-              <Text style={styles.exampleText}>
-                {'    System.out.println("Attack!");'}
-              </Text>
-
-              <Text style={styles.exampleText}>{"}"}</Text>
-            </View>
+            <Text style={styles.reward}>🪙 +60 COINS</Text>
           </View>
-        )}
-
-        {/* ATTACK */}
-
-        <Pressable style={styles.attackButton} onPress={checkAnswer}>
-          <Text style={styles.attackText}>⚔️ USE FUNCTION</Text>
-        </Pressable>
-
-        <Text style={styles.instruction}>
-          Create a reusable attack function.
-        </Text>
+        </View>
       </ScrollView>
     </View>
   );
@@ -244,7 +178,7 @@ const styles = StyleSheet.create({
 
   content: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 45,
   },
 
   header: {
@@ -256,8 +190,8 @@ const styles = StyleSheet.create({
 
   backButton: {
     color: "#94a3b8",
-    fontSize: 15,
-    fontWeight: "700",
+    fontSize: 14,
+    fontWeight: "800",
   },
 
   headerTitle: {
@@ -266,271 +200,190 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
 
-  headerLevel: {
-    color: "#c084fc",
-    fontSize: 14,
+  level: {
+    color: "#facc15",
+    fontSize: 13,
     fontWeight: "900",
   },
 
-  enemySection: {
+  titleSection: {
     alignItems: "center",
-    paddingVertical: 15,
+    marginBottom: 22,
+  },
+
+  battleIcon: {
+    fontSize: 48,
+    marginBottom: 5,
+  },
+
+  title: {
+    color: "#ffffff",
+    fontSize: 25,
+    fontWeight: "900",
+  },
+
+  subtitle: {
+    color: "#94a3b8",
+    fontSize: 13,
+    marginTop: 5,
+  },
+
+  enemyCard: {
+    backgroundColor: "#3f1720",
+    borderWidth: 1,
+    borderColor: "#7f1d1d",
+    borderRadius: 20,
+    padding: 22,
+    alignItems: "center",
+    marginBottom: 15,
   },
 
   enemyEmoji: {
-    fontSize: 80,
-    marginBottom: 10,
+    fontSize: 65,
+    marginBottom: 5,
   },
 
   enemyName: {
     color: "#ffffff",
-    fontSize: 24,
+    fontSize: 19,
     fontWeight: "900",
-    letterSpacing: 1,
   },
 
-  enemyDescription: {
-    color: "#94a3b8",
-    fontSize: 14,
-    marginTop: 6,
-    textAlign: "center",
-  },
-
-  hpContainer: {
-    width: "100%",
-    marginTop: 20,
-  },
-
-  hpLabel: {
-    color: "#cbd5e1",
-    fontSize: 13,
+  enemyHPText: {
+    color: "#fca5a5",
+    fontSize: 12,
     fontWeight: "800",
-    marginBottom: 7,
+    marginTop: 6,
+    marginBottom: 9,
   },
 
-  hpBarBackground: {
+  hpBackground: {
     width: "100%",
-    height: 16,
-    backgroundColor: "#334155",
+    height: 12,
+    backgroundColor: "#450a0a",
     borderRadius: 10,
     overflow: "hidden",
   },
 
   hpBar: {
     height: "100%",
-    backgroundColor: "#a855f7",
+    backgroundColor: "#ef4444",
     borderRadius: 10,
   },
 
-  messageBox: {
-    padding: 15,
-    borderRadius: 12,
-    marginTop: 15,
+  messageCard: {
+    backgroundColor: "#1e293b",
     borderWidth: 1,
+    borderColor: "#334155",
+    borderRadius: 14,
+    padding: 15,
+    marginBottom: 15,
   },
 
-  correctMessage: {
-    backgroundColor: "#052e16",
-    borderColor: "#22c55e",
-  },
-
-  wrongMessage: {
-    backgroundColor: "#450a0a",
-    borderColor: "#ef4444",
-  },
-
-  messageText: {
-    color: "#ffffff",
-    fontSize: 14,
-    fontWeight: "800",
+  message: {
+    color: "#f8fafc",
+    fontSize: 13,
+    lineHeight: 19,
     textAlign: "center",
+    fontWeight: "700",
   },
 
   challengeCard: {
-    backgroundColor: "#1e293b",
-    borderRadius: 16,
-    padding: 18,
-    marginTop: 20,
+    backgroundColor: "#172554",
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#1d4ed8",
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 15,
   },
 
-  challengeLabel: {
-    color: "#c084fc",
-    fontSize: 14,
+  sectionLabel: {
+    color: "#60a5fa",
+    fontSize: 11,
     fontWeight: "900",
     marginBottom: 10,
+    letterSpacing: 1,
   },
 
-  challengeText: {
+  question: {
     color: "#e2e8f0",
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 14,
+    lineHeight: 21,
   },
 
-  highlight: {
-    color: "#facc15",
-    fontWeight: "900",
+  codeBox: {
+    backgroundColor: "#020617",
+    borderRadius: 12,
+    padding: 15,
+    marginTop: 14,
   },
 
-  inputLabel: {
-    color: "#94a3b8",
-    fontSize: 13,
-    fontWeight: "800",
-    marginTop: 22,
-    marginBottom: 8,
+  codeText: {
+    color: "#86efac",
+    fontFamily: "monospace",
+    fontSize: 14,
   },
 
-  codeInput: {
+  answerCard: {
+    backgroundColor: "#1e293b",
+    borderWidth: 1,
+    borderColor: "#334155",
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 15,
+  },
+
+  input: {
+    minHeight: 110,
     backgroundColor: "#020617",
     borderWidth: 1,
-    borderColor: "#475569",
+    borderColor: "#334155",
     borderRadius: 12,
-    minHeight: 130,
-    padding: 16,
-    color: "#4ade80",
-    fontSize: 16,
-    fontFamily: "monospace",
-  },
-
-  hintCard: {
-    backgroundColor: "#422006",
-    borderWidth: 1,
-    borderColor: "#f59e0b",
-    borderRadius: 14,
-    padding: 16,
-    marginTop: 15,
-  },
-
-  hintTitle: {
-    color: "#fbbf24",
-    fontSize: 15,
-    fontWeight: "900",
-    marginBottom: 8,
-  },
-
-  hintText: {
-    color: "#fde68a",
-    fontSize: 14,
-    lineHeight: 22,
-  },
-
-  exampleCode: {
-    backgroundColor: "#1c1917",
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 10,
-  },
-
-  exampleText: {
-    color: "#4ade80",
+    padding: 15,
+    color: "#ffffff",
     fontFamily: "monospace",
     fontSize: 14,
-    lineHeight: 22,
+    textAlignVertical: "top",
+    marginBottom: 13,
   },
 
   attackButton: {
     backgroundColor: "#7c3aed",
-    borderRadius: 14,
-    paddingVertical: 18,
+    borderRadius: 12,
+    paddingVertical: 15,
     alignItems: "center",
-    marginTop: 22,
   },
 
-  attackText: {
+  attackButtonText: {
     color: "#ffffff",
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: "900",
-  },
-
-  instruction: {
-    color: "#64748b",
-    textAlign: "center",
-    fontSize: 12,
-    marginTop: 10,
-  },
-
-  victoryContainer: {
-    flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 25,
-  },
-
-  victoryIcon: {
-    fontSize: 80,
-    marginBottom: 15,
-  },
-
-  victoryTitle: {
-    color: "#facc15",
-    fontSize: 36,
-    fontWeight: "900",
-  },
-
-  victoryEnemy: {
-    color: "#ffffff",
-    fontSize: 17,
-    fontWeight: "800",
-    marginTop: 8,
   },
 
   rewardCard: {
-    width: "100%",
-    backgroundColor: "#1e293b",
-    borderRadius: 18,
-    padding: 22,
-    marginTop: 30,
-    alignItems: "center",
+    backgroundColor: "#422006",
     borderWidth: 1,
-    borderColor: "#475569",
+    borderColor: "#a16207",
+    borderRadius: 18,
+    padding: 17,
   },
 
   rewardTitle: {
-    color: "#94a3b8",
-    fontSize: 13,
+    color: "#facc15",
+    fontSize: 11,
     fontWeight: "900",
+    textAlign: "center",
     marginBottom: 12,
   },
 
+  rewardRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+  },
+
   reward: {
-    color: "#ffffff",
-    fontSize: 18,
-    fontWeight: "800",
-    marginVertical: 5,
-  },
-
-  victoryMessage: {
-    color: "#cbd5e1",
-    fontSize: 15,
-    lineHeight: 23,
-    textAlign: "center",
-    marginTop: 25,
-  },
-
-  continueButton: {
-    width: "100%",
-    backgroundColor: "#2563eb",
-    borderRadius: 14,
-    paddingVertical: 17,
-    alignItems: "center",
-    marginTop: 30,
-  },
-
-  continueText: {
-    color: "#ffffff",
-    fontSize: 16,
+    color: "#fde68a",
+    fontSize: 13,
     fontWeight: "900",
-  },
-
-  retryButton: {
-    marginTop: 15,
-    paddingVertical: 12,
-  },
-
-  retryText: {
-    color: "#94a3b8",
-    fontSize: 14,
-    fontWeight: "800",
   },
 });
