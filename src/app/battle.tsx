@@ -1,212 +1,176 @@
 import { router } from "expo-router";
 import { useState } from "react";
 import {
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
+
 import { usePlayer } from "../store/player";
 
 export default function BattleScreen() {
-  const { addRewards } = usePlayer();
+  const { addRewards, unlockAchievement } = usePlayer();
 
-  const [code, setCode] = useState("");
-  const [enemyHp, setEnemyHp] = useState(100);
-  const [message, setMessage] = useState("");
-  const [showHint, setShowHint] = useState(false);
-  const [victory, setVictory] = useState(false);
+  const [answer, setAnswer] = useState("");
 
-  const checkAnswer = () => {
-    const normalizedCode = code.replace(/\s+/g, " ").trim();
+  const [enemyHP, setEnemyHP] = useState(100);
 
-    const answerWithoutSpaces = normalizedCode.replace(/\s/g, "");
+  const [battleMessage, setBattleMessage] = useState(
+    "The Syntax Slime is waiting...",
+  );
 
-    const correctAnswer = "intscore=100;";
+  const correctAnswers = ["intscore=100;"];
 
-    const isCorrect = answerWithoutSpaces === correctAnswer;
+  const normalizeAnswer = (value: string) => {
+    return value.replace(/\s+/g, "").toLowerCase();
+  };
 
-    if (isCorrect) {
-      const newHp = Math.max(enemyHp - 40, 0);
+  const handleAttack = () => {
+    const normalizedAnswer = normalizeAnswer(answer);
 
-      setEnemyHp(newHp);
-      setMessage("💥 CORRECT! You dealt 40 damage!");
-      setShowHint(false);
+    const isCorrect = correctAnswers.includes(normalizedAnswer);
 
-      if (newHp === 0) {
-        // Give the player actual rewards
-        addRewards(50, 25);
+    if (!isCorrect) {
+      setBattleMessage("❌ Wrong code! Try again.");
 
-        setVictory(true);
-      }
-    } else {
-      setMessage("❌ WRONG! The Syntax Slime attacks!");
-      setShowHint(true);
+      Alert.alert("WRONG ANSWER", "That code is not correct. Try again.");
+
+      return;
     }
+
+    const newHP = Math.max(enemyHP - 40, 0);
+
+    setEnemyHP(newHP);
+
+    setAnswer("");
+
+    if (newHP <= 0) {
+      setBattleMessage("🎉 Syntax Slime defeated!");
+
+      addRewards(50, 25);
+
+      unlockAchievement("first_blood");
+
+      Alert.alert(
+        "VICTORY!",
+        "You defeated the Syntax Slime!\n\n+50 XP\n+25 Coins\n🏆 Achievement Unlocked: First Blood",
+        [
+          {
+            text: "CONTINUE",
+            onPress: () => {
+              router.push("/conditions");
+            },
+          },
+        ],
+      );
+
+      return;
+    }
+
+    setBattleMessage("⚔️ Correct! You dealt 40 damage!");
   };
 
-  const resetBattle = () => {
-    setCode("");
-    setEnemyHp(100);
-    setMessage("");
-    setShowHint(false);
-    setVictory(false);
-  };
-
-  /*
-   * VICTORY SCREEN
-   */
-  if (victory) {
-    return (
-      <View style={styles.container}>
-        <ScrollView contentContainerStyle={styles.victoryContainer}>
-          <Text style={styles.victoryIcon}>🏆</Text>
-
-          <Text style={styles.victoryTitle}>VICTORY!</Text>
-
-          <Text style={styles.victoryEnemy}>SYNTAX SLIME DEFEATED</Text>
-
-          {/* REWARDS */}
-          <View style={styles.rewardCard}>
-            <Text style={styles.rewardTitle}>REWARDS</Text>
-
-            <Text style={styles.reward}>⭐ +50 XP</Text>
-
-            <Text style={styles.reward}>🪙 +25 COINS</Text>
-          </View>
-
-          <Text style={styles.victoryMessage}>
-            Excellent work, Code Adventurer!
-            {"\n\n"}
-            You successfully created a variable.
-          </Text>
-
-          {/* CONTINUE */}
-          <Pressable
-            style={styles.continueButton}
-            onPress={() => router.back()}
-          >
-            <Text style={styles.continueText}>CONTINUE ➜</Text>
-          </Pressable>
-
-          {/* FIGHT AGAIN */}
-          <Pressable style={styles.retryButton} onPress={resetBattle}>
-            <Text style={styles.retryText}>FIGHT AGAIN</Text>
-          </Pressable>
-        </ScrollView>
-      </View>
-    );
-  }
-
-  /*
-   * BATTLE SCREEN
-   */
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         {/* HEADER */}
         <View style={styles.header}>
           <Pressable onPress={() => router.back()}>
             <Text style={styles.backButton}>‹ BACK</Text>
           </Pressable>
 
-          <Text style={styles.headerTitle}>CODING BATTLE</Text>
+          <Text style={styles.headerTitle}>BATTLE</Text>
 
-          <Text style={styles.headerLevel}>LV. 1</Text>
+          <Text style={styles.level}>LV.1</Text>
+        </View>
+
+        {/* BATTLE TITLE */}
+        <View style={styles.titleSection}>
+          <Text style={styles.battleIcon}>⚔️</Text>
+
+          <Text style={styles.title}>SYNTAX SLIME</Text>
+
+          <Text style={styles.subtitle}>Defeat the enemy using Java code.</Text>
         </View>
 
         {/* ENEMY */}
-        <View style={styles.enemySection}>
+        <View style={styles.enemyCard}>
           <Text style={styles.enemyEmoji}>🟢</Text>
 
           <Text style={styles.enemyName}>SYNTAX SLIME</Text>
 
-          <Text style={styles.enemyDescription}>
-            "Defeat me with the power of code!"
-          </Text>
+          <Text style={styles.enemyHPText}>HP {enemyHP} / 100</Text>
 
-          {/* HP */}
-          <View style={styles.hpContainer}>
-            <Text style={styles.hpLabel}>HP {enemyHp} / 100</Text>
-
-            <View style={styles.hpBarBackground}>
-              <View
-                style={[
-                  styles.hpBar,
-                  {
-                    width: `${enemyHp}%`,
-                  },
-                ]}
-              />
-            </View>
+          <View style={styles.hpBackground}>
+            <View
+              style={[
+                styles.hpBar,
+                {
+                  width: `${enemyHP}%`,
+                },
+              ]}
+            />
           </View>
         </View>
 
         {/* BATTLE MESSAGE */}
-        {message !== "" && (
-          <View
-            style={[
-              styles.messageBox,
-              showHint ? styles.wrongMessage : styles.correctMessage,
-            ]}
-          >
-            <Text style={styles.messageText}>{message}</Text>
-          </View>
-        )}
+        <View style={styles.messageCard}>
+          <Text style={styles.message}>{battleMessage}</Text>
+        </View>
 
         {/* CHALLENGE */}
         <View style={styles.challengeCard}>
-          <Text style={styles.challengeLabel}>⚔️ CHALLENGE</Text>
+          <Text style={styles.sectionLabel}>CODING CHALLENGE</Text>
 
-          <Text style={styles.challengeText}>
-            Create an integer variable called{" "}
-            <Text style={styles.highlight}>score</Text> with the value{" "}
-            <Text style={styles.highlight}>100</Text>.
+          <Text style={styles.question}>
+            Create an integer variable named
+            <Text style={styles.highlight}>{" score "}</Text>
+            and set its value to
+            <Text style={styles.highlight}>{" 100"}</Text>.
           </Text>
+
+          <View style={styles.codeBox}>
+            <Text style={styles.codeText}>int score = 100;</Text>
+          </View>
         </View>
 
-        {/* CODE INPUT */}
-        <Text style={styles.inputLabel}>WRITE YOUR CODE</Text>
+        {/* ANSWER */}
+        <View style={styles.answerCard}>
+          <Text style={styles.sectionLabel}>YOUR CODE</Text>
 
-        <TextInput
-          style={styles.codeInput}
-          value={code}
-          onChangeText={setCode}
-          placeholder="int score = 100;"
-          placeholderTextColor="#6b7280"
-          multiline
-          autoCapitalize="none"
-          autoCorrect={false}
-          textAlignVertical="top"
-        />
+          <TextInput
+            value={answer}
+            onChangeText={setAnswer}
+            placeholder="Type your Java code..."
+            placeholderTextColor="#64748b"
+            style={styles.input}
+            multiline
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
 
-        {/* HINT */}
-        {showHint && (
-          <View style={styles.hintCard}>
-            <Text style={styles.hintTitle}>💡 HINT</Text>
+          <Pressable style={styles.attackButton} onPress={handleAttack}>
+            <Text style={styles.attackButtonText}>⚔️ ATTACK</Text>
+          </Pressable>
+        </View>
 
-            <Text style={styles.hintText}>Use this format:</Text>
+        {/* REWARD */}
+        <View style={styles.rewardCard}>
+          <Text style={styles.rewardTitle}>VICTORY REWARD</Text>
 
-            <View style={styles.exampleCode}>
-              <Text style={styles.exampleText}>int variableName = value;</Text>
-            </View>
+          <View style={styles.rewardRow}>
+            <Text style={styles.reward}>⭐ +50 XP</Text>
 
-            <Text style={styles.hintText}>
-              Your variable must be named{" "}
-              <Text style={styles.highlight}>score</Text> and its value must be{" "}
-              <Text style={styles.highlight}>100</Text>.
-            </Text>
+            <Text style={styles.reward}>🪙 +25 COINS</Text>
           </View>
-        )}
-
-        {/* ATTACK BUTTON */}
-        <Pressable style={styles.attackButton} onPress={checkAnswer}>
-          <Text style={styles.attackText}>⚔️ ATTACK</Text>
-        </Pressable>
-
-        <Text style={styles.instruction}>Correct code damages the enemy.</Text>
+        </View>
       </ScrollView>
     </View>
   );
@@ -220,7 +184,7 @@ const styles = StyleSheet.create({
 
   content: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 45,
   },
 
   header: {
@@ -232,8 +196,8 @@ const styles = StyleSheet.create({
 
   backButton: {
     color: "#94a3b8",
-    fontSize: 15,
-    fontWeight: "700",
+    fontSize: 14,
+    fontWeight: "800",
   },
 
   headerTitle: {
@@ -242,106 +206,115 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
 
-  headerLevel: {
-    color: "#38bdf8",
-    fontSize: 14,
-    fontWeight: "800",
+  level: {
+    color: "#facc15",
+    fontSize: 13,
+    fontWeight: "900",
   },
 
-  enemySection: {
+  titleSection: {
     alignItems: "center",
-    paddingVertical: 15,
+    marginBottom: 22,
+  },
+
+  battleIcon: {
+    fontSize: 48,
+    marginBottom: 5,
+  },
+
+  title: {
+    color: "#ffffff",
+    fontSize: 25,
+    fontWeight: "900",
+  },
+
+  subtitle: {
+    color: "#94a3b8",
+    fontSize: 13,
+    marginTop: 5,
+  },
+
+  enemyCard: {
+    backgroundColor: "#3f1720",
+    borderWidth: 1,
+    borderColor: "#7f1d1d",
+    borderRadius: 20,
+    padding: 22,
+    alignItems: "center",
+    marginBottom: 15,
   },
 
   enemyEmoji: {
-    fontSize: 80,
-    marginBottom: 10,
+    fontSize: 65,
+    marginBottom: 5,
   },
 
   enemyName: {
     color: "#ffffff",
-    fontSize: 24,
+    fontSize: 19,
     fontWeight: "900",
-    letterSpacing: 1,
   },
 
-  enemyDescription: {
-    color: "#94a3b8",
-    fontSize: 14,
-    marginTop: 6,
-    textAlign: "center",
-  },
-
-  hpContainer: {
-    width: "100%",
-    marginTop: 20,
-  },
-
-  hpLabel: {
-    color: "#cbd5e1",
-    fontSize: 13,
+  enemyHPText: {
+    color: "#fca5a5",
+    fontSize: 12,
     fontWeight: "800",
-    marginBottom: 7,
+    marginTop: 6,
+    marginBottom: 9,
   },
 
-  hpBarBackground: {
+  hpBackground: {
     width: "100%",
-    height: 16,
-    backgroundColor: "#334155",
+    height: 12,
+    backgroundColor: "#450a0a",
     borderRadius: 10,
     overflow: "hidden",
   },
 
   hpBar: {
     height: "100%",
-    backgroundColor: "#22c55e",
+    backgroundColor: "#ef4444",
     borderRadius: 10,
   },
 
-  messageBox: {
-    padding: 15,
-    borderRadius: 12,
-    marginTop: 15,
+  messageCard: {
+    backgroundColor: "#1e293b",
     borderWidth: 1,
+    borderColor: "#334155",
+    borderRadius: 14,
+    padding: 15,
+    marginBottom: 15,
   },
 
-  correctMessage: {
-    backgroundColor: "#052e16",
-    borderColor: "#22c55e",
-  },
-
-  wrongMessage: {
-    backgroundColor: "#450a0a",
-    borderColor: "#ef4444",
-  },
-
-  messageText: {
-    color: "#ffffff",
-    fontSize: 14,
-    fontWeight: "800",
+  message: {
+    color: "#f8fafc",
+    fontSize: 13,
+    lineHeight: 19,
     textAlign: "center",
+    fontWeight: "700",
   },
 
   challengeCard: {
-    backgroundColor: "#1e293b",
-    borderRadius: 16,
-    padding: 18,
-    marginTop: 20,
+    backgroundColor: "#172554",
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#1d4ed8",
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 15,
   },
 
-  challengeLabel: {
-    color: "#38bdf8",
-    fontSize: 14,
+  sectionLabel: {
+    color: "#60a5fa",
+    fontSize: 11,
     fontWeight: "900",
     marginBottom: 10,
+    letterSpacing: 1,
   },
 
-  challengeText: {
+  question: {
     color: "#e2e8f0",
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 14,
+    lineHeight: 21,
   },
 
   highlight: {
@@ -349,163 +322,79 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
 
-  inputLabel: {
-    color: "#94a3b8",
-    fontSize: 13,
-    fontWeight: "800",
-    marginTop: 22,
-    marginBottom: 8,
+  codeBox: {
+    backgroundColor: "#020617",
+    borderRadius: 12,
+    padding: 15,
+    marginTop: 14,
   },
 
-  codeInput: {
+  codeText: {
+    color: "#86efac",
+    fontFamily: "monospace",
+    fontSize: 14,
+  },
+
+  answerCard: {
+    backgroundColor: "#1e293b",
+    borderWidth: 1,
+    borderColor: "#334155",
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 15,
+  },
+
+  input: {
+    minHeight: 110,
     backgroundColor: "#020617",
     borderWidth: 1,
-    borderColor: "#475569",
+    borderColor: "#334155",
     borderRadius: 12,
-    minHeight: 120,
-    padding: 16,
-    color: "#4ade80",
-    fontSize: 16,
-    fontFamily: "monospace",
-  },
-
-  hintCard: {
-    backgroundColor: "#422006",
-    borderWidth: 1,
-    borderColor: "#f59e0b",
-    borderRadius: 14,
-    padding: 16,
-    marginTop: 15,
-  },
-
-  hintTitle: {
-    color: "#fbbf24",
-    fontSize: 15,
-    fontWeight: "900",
-    marginBottom: 8,
-  },
-
-  hintText: {
-    color: "#fde68a",
-    fontSize: 14,
-    lineHeight: 21,
-  },
-
-  exampleCode: {
-    backgroundColor: "#1c1917",
-    padding: 12,
-    borderRadius: 8,
-    marginVertical: 10,
-  },
-
-  exampleText: {
-    color: "#4ade80",
+    padding: 15,
+    color: "#ffffff",
     fontFamily: "monospace",
     fontSize: 14,
+    textAlignVertical: "top",
+    marginBottom: 13,
   },
 
   attackButton: {
     backgroundColor: "#dc2626",
-    borderRadius: 14,
-    paddingVertical: 18,
+    borderRadius: 12,
+    paddingVertical: 15,
     alignItems: "center",
-    marginTop: 22,
   },
 
-  attackText: {
+  attackButtonText: {
     color: "#ffffff",
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: "900",
-  },
-
-  instruction: {
-    color: "#64748b",
-    textAlign: "center",
-    fontSize: 12,
-    marginTop: 10,
-  },
-
-  victoryContainer: {
-    flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 25,
-  },
-
-  victoryIcon: {
-    fontSize: 80,
-    marginBottom: 15,
-  },
-
-  victoryTitle: {
-    color: "#facc15",
-    fontSize: 36,
-    fontWeight: "900",
-  },
-
-  victoryEnemy: {
-    color: "#ffffff",
-    fontSize: 17,
-    fontWeight: "800",
-    marginTop: 8,
   },
 
   rewardCard: {
-    width: "100%",
-    backgroundColor: "#1e293b",
-    borderRadius: 18,
-    padding: 22,
-    marginTop: 30,
-    alignItems: "center",
+    backgroundColor: "#422006",
     borderWidth: 1,
-    borderColor: "#475569",
+    borderColor: "#a16207",
+    borderRadius: 18,
+    padding: 17,
   },
 
   rewardTitle: {
-    color: "#94a3b8",
-    fontSize: 13,
+    color: "#facc15",
+    fontSize: 11,
     fontWeight: "900",
+    textAlign: "center",
     marginBottom: 12,
   },
 
+  rewardRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+  },
+
   reward: {
-    color: "#ffffff",
-    fontSize: 18,
-    fontWeight: "800",
-    marginVertical: 5,
-  },
-
-  victoryMessage: {
-    color: "#cbd5e1",
-    fontSize: 15,
-    lineHeight: 23,
-    textAlign: "center",
-    marginTop: 25,
-  },
-
-  continueButton: {
-    width: "100%",
-    backgroundColor: "#2563eb",
-    borderRadius: 14,
-    paddingVertical: 17,
-    alignItems: "center",
-    marginTop: 30,
-  },
-
-  continueText: {
-    color: "#ffffff",
-    fontSize: 16,
+    color: "#fde68a",
+    fontSize: 13,
     fontWeight: "900",
-  },
-
-  retryButton: {
-    marginTop: 15,
-    paddingVertical: 12,
-  },
-
-  retryText: {
-    color: "#94a3b8",
-    fontSize: 14,
-    fontWeight: "800",
   },
 });

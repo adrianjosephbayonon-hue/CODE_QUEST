@@ -5,7 +5,7 @@ import { useDailyQuest } from "../store/dailyQuest";
 import { usePlayer } from "../store/player";
 
 export default function HomeScreen() {
-  const { player, addRewards } = usePlayer();
+  const { player, addRewards, unlockAchievement } = usePlayer();
 
   const { completed, completeQuest } = useDailyQuest();
 

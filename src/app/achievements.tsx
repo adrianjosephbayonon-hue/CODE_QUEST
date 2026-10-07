@@ -17,28 +17,24 @@ const achievements: Achievement[] = [
     title: "FIRST BLOOD",
     description: "Defeat the Syntax Slime for the first time.",
   },
-
   {
     id: "logic_slayer",
     icon: "🌲",
     title: "LOGIC SLAYER",
     description: "Defeat the Logic Goblin.",
   },
-
   {
     id: "loop_master",
     icon: "🔄",
     title: "LOOP MASTER",
     description: "Defeat the Loop Dragon.",
   },
-
   {
     id: "function_master",
     icon: "🧙",
     title: "FUNCTION MASTER",
     description: "Defeat the Function Mage.",
   },
-
   {
     id: "codequest_beginner",
     icon: "👑",
@@ -58,10 +54,7 @@ export default function AchievementsScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* ========================= */}
         {/* HEADER */}
-        {/* ========================= */}
-
         <View style={styles.header}>
           <Pressable onPress={() => router.back()}>
             <Text style={styles.backButton}>‹ BACK</Text>
@@ -74,10 +67,7 @@ export default function AchievementsScreen() {
           </Text>
         </View>
 
-        {/* ========================= */}
         {/* TITLE */}
-        {/* ========================= */}
-
         <View style={styles.titleSection}>
           <Text style={styles.trophy}>🏆</Text>
 
@@ -88,10 +78,7 @@ export default function AchievementsScreen() {
           </Text>
         </View>
 
-        {/* ========================= */}
         {/* PROGRESS */}
-        {/* ========================= */}
-
         <View style={styles.progressCard}>
           <View style={styles.progressHeader}>
             <Text style={styles.progressTitle}>ACHIEVEMENT PROGRESS</Text>
@@ -113,10 +100,7 @@ export default function AchievementsScreen() {
           </View>
         </View>
 
-        {/* ========================= */}
         {/* ACHIEVEMENTS */}
-        {/* ========================= */}
-
         {achievements.map((achievement) => {
           const unlocked = player.achievements.includes(achievement.id);
 
@@ -128,8 +112,6 @@ export default function AchievementsScreen() {
                 unlocked ? styles.unlockedCard : styles.lockedCard,
               ]}
             >
-              {/* ICON */}
-
               <View
                 style={[
                   styles.iconContainer,
@@ -140,8 +122,6 @@ export default function AchievementsScreen() {
                   {unlocked ? achievement.icon : "🔒"}
                 </Text>
               </View>
-
-              {/* INFORMATION */}
 
               <View style={styles.info}>
                 <Text
@@ -175,10 +155,7 @@ export default function AchievementsScreen() {
           );
         })}
 
-        {/* ========================= */}
         {/* MOTIVATION */}
-        {/* ========================= */}
-
         <View style={styles.motivationCard}>
           <Text style={styles.motivationIcon}>⭐</Text>
 
@@ -205,8 +182,6 @@ const styles = StyleSheet.create({
     paddingBottom: 45,
   },
 
-  /* HEADER */
-
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -231,8 +206,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "900",
   },
-
-  /* TITLE */
 
   titleSection: {
     alignItems: "center",
@@ -259,8 +232,6 @@ const styles = StyleSheet.create({
     marginTop: 7,
     maxWidth: 320,
   },
-
-  /* PROGRESS */
 
   progressCard: {
     backgroundColor: "#1e293b",
@@ -302,8 +273,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
 
-  /* ACHIEVEMENT CARD */
-
   achievementCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -322,8 +291,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#111827",
     borderColor: "#1f2937",
   },
-
-  /* ICON */
 
   iconContainer: {
     width: 60,
@@ -345,8 +312,6 @@ const styles = StyleSheet.create({
   icon: {
     fontSize: 30,
   },
-
-  /* INFO */
 
   info: {
     flex: 1,
@@ -386,8 +351,6 @@ const styles = StyleSheet.create({
   lockedStatus: {
     color: "#475569",
   },
-
-  /* MOTIVATION */
 
   motivationCard: {
     alignItems: "center",

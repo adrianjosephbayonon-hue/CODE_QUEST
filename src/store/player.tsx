@@ -63,10 +63,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         if (savedPlayer) {
           const parsedPlayer = JSON.parse(savedPlayer);
 
-          /*
-           * Make sure old saved data that does
-           * not have achievements still works.
-           */
           setPlayer({
             ...defaultPlayer,
             ...parsedPlayer,
@@ -120,9 +116,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
         level: newLevel,
 
-        /*
-         * WORLD UNLOCKS
-         */
         conditionForestUnlocked: newXP >= 50,
 
         loopLandsUnlocked: newXP >= 125,
@@ -137,9 +130,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
    */
   const unlockAchievement = (achievementId: string) => {
     setPlayer((currentPlayer) => {
-      /*
-       * Already unlocked.
-       */
       if (currentPlayer.achievements.includes(achievementId)) {
         return currentPlayer;
       }
@@ -173,8 +163,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   };
 
   /*
-   * DON'T RENDER UNTIL SAVED DATA
-   * HAS BEEN LOADED.
+   * WAIT FOR SAVED DATA
    */
   if (!isLoaded) {
     return null;
