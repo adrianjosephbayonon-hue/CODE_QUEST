@@ -11,14 +11,23 @@ type Player = {
   level: number;
   xp: number;
   coins: number;
+
   conditionForestUnlocked: boolean;
   loopLandsUnlocked: boolean;
   functionKingdomUnlocked: boolean;
+
+  achievements: string[];
 };
 
 type PlayerContextType = {
   player: Player;
+
   addRewards: (xp: number, coins: number) => void;
+
+  unlockAchievement: (achievementId: string) => void;
+
+  hasAchievement: (achievementId: string) => boolean;
+
   resetProgress: () => void;
 };
 
@@ -28,9 +37,12 @@ const defaultPlayer: Player = {
   level: 1,
   xp: 0,
   coins: 0,
+
   conditionForestUnlocked: false,
   loopLandsUnlocked: false,
   functionKingdomUnlocked: false,
+
+  achievements: [],
 };
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -51,7 +63,15 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         if (savedPlayer) {
           const parsedPlayer = JSON.parse(savedPlayer);
 
-          setPlayer(parsedPlayer);
+          /*
+           * Make sure old saved data that does
+           * not have achievements still works.
+           */
+          setPlayer({
+            ...defaultPlayer,
+            ...parsedPlayer,
+            achievements: parsedPlayer.achievements ?? [],
+          });
         }
       } catch (error) {
         console.log("Failed to load player:", error);
@@ -103,7 +123,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         /*
          * WORLD UNLOCKS
          */
-
         conditionForestUnlocked: newXP >= 50,
 
         loopLandsUnlocked: newXP >= 125,
@@ -111,6 +130,33 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         functionKingdomUnlocked: newXP >= 225,
       };
     });
+  };
+
+  /*
+   * UNLOCK ACHIEVEMENT
+   */
+  const unlockAchievement = (achievementId: string) => {
+    setPlayer((currentPlayer) => {
+      /*
+       * Already unlocked.
+       */
+      if (currentPlayer.achievements.includes(achievementId)) {
+        return currentPlayer;
+      }
+
+      return {
+        ...currentPlayer,
+
+        achievements: [...currentPlayer.achievements, achievementId],
+      };
+    });
+  };
+
+  /*
+   * CHECK ACHIEVEMENT
+   */
+  const hasAchievement = (achievementId: string) => {
+    return player.achievements.includes(achievementId);
   };
 
   /*
@@ -127,8 +173,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   };
 
   /*
-   * DON'T RENDER THE GAME UNTIL
-   * SAVED DATA HAS BEEN LOADED.
+   * DON'T RENDER UNTIL SAVED DATA
+   * HAS BEEN LOADED.
    */
   if (!isLoaded) {
     return null;
@@ -139,6 +185,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       value={{
         player,
         addRewards,
+        unlockAchievement,
+        hasAchievement,
         resetProgress,
       }}
     >
