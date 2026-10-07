@@ -1,51 +1,56 @@
 import { router } from "expo-router";
-import {
-    Pressable,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
-} from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 export default function VariablesScreen() {
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.content}>
         {/* HEADER */}
         <View style={styles.header}>
           <Pressable onPress={() => router.back()}>
-            <Text style={styles.backButton}>‹</Text>
+            <Text style={styles.backButton}>‹ BACK</Text>
           </Pressable>
 
-          <View>
-            <Text style={styles.title}>VARIABLES</Text>
+          <Text style={styles.headerTitle}>VARIABLES</Text>
 
-            <Text style={styles.subtitle}>Quest 1</Text>
-          </View>
+          <Text style={styles.questNumber}>QUEST 1</Text>
+        </View>
 
-          <View style={styles.headerSpacer} />
+        {/* TITLE */}
+        <View style={styles.titleSection}>
+          <Text style={styles.icon}>📦</Text>
+
+          <Text style={styles.title}>What is a Variable?</Text>
+
+          <Text style={styles.subtitle}>
+            Learn how programs store information.
+          </Text>
         </View>
 
         {/* LESSON */}
         <View style={styles.lessonCard}>
-          <Text style={styles.lessonEmoji}>📦</Text>
-
-          <Text style={styles.lessonTitle}>What is a Variable?</Text>
+          <Text style={styles.sectionTitle}>📚 LESSON</Text>
 
           <Text style={styles.lessonText}>
-            A variable is a container that stores information in a program.
+            A variable is a named container that stores a value in your program.
           </Text>
 
+          <Text style={styles.lessonText}>
+            Think of it like a box. You give the box a name, then put
+            information inside it.
+          </Text>
+
+          {/* CODE EXAMPLE */}
           <View style={styles.codeBox}>
-            <Text style={styles.code}>int score = 100;</Text>
+            <Text style={styles.codeText}>int score = 100;</Text>
           </View>
 
           <Text style={styles.explanation}>
-            In this example, the variable
-            <Text style={styles.highlight}>{" score "}</Text>
-            stores the value
-            <Text style={styles.highlight}>{" 100"}</Text>.
+            <Text style={styles.highlight}>int</Text> → the data type
+            {"\n"}
+            <Text style={styles.highlight}>score</Text> → the variable name
+            {"\n"}
+            <Text style={styles.highlight}>100</Text> → the stored value
           </Text>
         </View>
 
@@ -54,153 +59,164 @@ export default function VariablesScreen() {
           <Text style={styles.objectiveTitle}>🎯 YOUR OBJECTIVE</Text>
 
           <Text style={styles.objectiveText}>
-            Learn how to create a variable that stores a number.
+            Create an integer variable named{" "}
+            <Text style={styles.highlight}>score</Text> and give it the value{" "}
+            <Text style={styles.highlight}>100</Text>.
           </Text>
         </View>
 
-        {/* START */}
-        <Pressable style={styles.startButton}>
-          <Text style={styles.startButtonText}>START CHALLENGE ⚔️</Text>
+        {/* START CHALLENGE */}
+        <Pressable
+          style={styles.startButton}
+          onPress={() => router.push("/battle")}
+        >
+          <Text style={styles.startText}>START CHALLENGE ⚔️</Text>
         </Pressable>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#10131f",
-    paddingHorizontal: 20,
+    backgroundColor: "#0f172a",
+  },
+
+  content: {
+    padding: 20,
+    paddingBottom: 40,
   },
 
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingTop: 15,
-    paddingBottom: 20,
+    marginBottom: 25,
   },
 
   backButton: {
-    color: "#ffffff",
-    fontSize: 40,
-    fontWeight: "300",
-    width: 35,
+    color: "#94a3b8",
+    fontSize: 15,
+    fontWeight: "700",
   },
 
-  headerSpacer: {
-    width: 35,
+  headerTitle: {
+    color: "#ffffff",
+    fontSize: 18,
+    fontWeight: "900",
+  },
+
+  questNumber: {
+    color: "#38bdf8",
+    fontSize: 13,
+    fontWeight: "800",
+  },
+
+  titleSection: {
+    alignItems: "center",
+    marginBottom: 25,
+  },
+
+  icon: {
+    fontSize: 55,
+    marginBottom: 10,
   },
 
   title: {
     color: "#ffffff",
-    fontSize: 22,
+    fontSize: 27,
     fontWeight: "900",
     textAlign: "center",
   },
 
   subtitle: {
-    color: "#7c5cff",
-    fontSize: 11,
-    fontWeight: "700",
+    color: "#94a3b8",
+    fontSize: 14,
     textAlign: "center",
-    marginTop: 3,
+    marginTop: 7,
   },
 
   lessonCard: {
-    backgroundColor: "#1b2030",
-    borderRadius: 20,
+    backgroundColor: "#1e293b",
+    borderRadius: 18,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#292f43",
+    borderColor: "#334155",
   },
 
-  lessonEmoji: {
-    fontSize: 50,
-    textAlign: "center",
-  },
-
-  lessonTitle: {
-    color: "#ffffff",
-    fontSize: 21,
+  sectionTitle: {
+    color: "#38bdf8",
+    fontSize: 14,
     fontWeight: "900",
-    textAlign: "center",
-    marginTop: 12,
+    marginBottom: 15,
   },
 
   lessonText: {
-    color: "#a1a8ba",
-    fontSize: 14,
-    lineHeight: 22,
-    textAlign: "center",
-    marginTop: 10,
+    color: "#cbd5e1",
+    fontSize: 15,
+    lineHeight: 23,
+    marginBottom: 13,
   },
 
   codeBox: {
-    backgroundColor: "#0b0e17",
-    borderRadius: 12,
-    padding: 18,
-    marginTop: 20,
-    borderWidth: 1,
-    borderColor: "#30364a",
+    backgroundColor: "#020617",
+    borderRadius: 10,
+    padding: 16,
+    marginVertical: 10,
   },
 
-  code: {
-    color: "#a78bfa",
+  codeText: {
+    color: "#4ade80",
     fontSize: 16,
-    fontWeight: "700",
     fontFamily: "monospace",
   },
 
   explanation: {
-    color: "#8f96aa",
-    fontSize: 12,
-    lineHeight: 19,
-    marginTop: 15,
+    color: "#94a3b8",
+    fontSize: 14,
+    lineHeight: 25,
+    marginTop: 10,
   },
 
   highlight: {
-    color: "#ffffff",
-    fontWeight: "800",
+    color: "#facc15",
+    fontWeight: "900",
   },
 
   objectiveCard: {
-    backgroundColor: "#211e32",
+    backgroundColor: "#172554",
+    borderWidth: 1,
+    borderColor: "#2563eb",
     borderRadius: 16,
     padding: 18,
-    marginTop: 15,
-    borderWidth: 1,
-    borderColor: "#3b3459",
+    marginTop: 18,
   },
 
   objectiveTitle: {
-    color: "#7c5cff",
-    fontSize: 12,
+    color: "#60a5fa",
+    fontSize: 14,
     fontWeight: "900",
-    letterSpacing: 1,
+    marginBottom: 10,
   },
 
   objectiveText: {
-    color: "#ffffff",
-    fontSize: 13,
-    lineHeight: 20,
-    marginTop: 7,
+    color: "#dbeafe",
+    fontSize: 15,
+    lineHeight: 23,
   },
 
   startButton: {
-    backgroundColor: "#7c5cff",
+    backgroundColor: "#2563eb",
     borderRadius: 15,
-    paddingVertical: 17,
+    paddingVertical: 18,
     alignItems: "center",
-    marginTop: 20,
-    marginBottom: 30,
+    marginTop: 22,
   },
 
-  startButtonText: {
+  startText: {
     color: "#ffffff",
-    fontSize: 14,
+    fontSize: 17,
     fontWeight: "900",
-    letterSpacing: 0.5,
   },
 });

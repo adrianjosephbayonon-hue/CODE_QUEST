@@ -1,343 +1,289 @@
 import { router } from "expo-router";
-import {
-  Pressable,
-  SafeAreaView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { usePlayer } from "../store/player";
 
 export default function HomeScreen() {
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
+  const { player } = usePlayer();
 
-      {/* HEADER */}
-      <View style={styles.header}>
-        <View>
+  return (
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.content}>
+        {/* LOGO */}
+        <View style={styles.logoSection}>
           <Text style={styles.logo}>CODEQUEST</Text>
 
-          <Text style={styles.subtitle}>Learn to Code. Level Up.</Text>
+          <Text style={styles.tagline}>Learn to Code. Level Up.</Text>
         </View>
 
+        {/* COINS */}
         <View style={styles.coinBox}>
-          <Text style={styles.coin}>🪙</Text>
-          <Text style={styles.coinText}>100</Text>
-        </View>
-      </View>
+          <Text style={styles.coinIcon}>🪙</Text>
 
-      {/* PLAYER CARD */}
-      <View style={styles.playerCard}>
-        <View style={styles.character}>
-          <Text style={styles.characterEmoji}>🧙</Text>
+          <Text style={styles.coinText}>{player.coins}</Text>
         </View>
 
-        <View style={styles.playerInfo}>
-          <Text style={styles.playerName}>Code Adventurer</Text>
+        {/* PLAYER CARD */}
+        <View style={styles.playerCard}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>🧑‍💻</Text>
+          </View>
 
-          <Text style={styles.level}>LEVEL 1</Text>
+          <View style={styles.playerInfo}>
+            <Text style={styles.playerName}>Code Adventurer</Text>
 
-          <View style={styles.xpContainer}>
-            <View style={styles.xpBar}>
-              <View style={styles.xpProgress} />
+            <Text style={styles.level}>LEVEL {player.level}</Text>
+
+            {/* XP */}
+            <View style={styles.xpRow}>
+              <Text style={styles.xpText}>{player.xp % 100} / 100 XP</Text>
             </View>
 
-            <Text style={styles.xpText}>30 / 100 XP</Text>
+            <View style={styles.xpBackground}>
+              <View
+                style={[
+                  styles.xpBar,
+                  {
+                    width: `${player.xp % 100}%`,
+                  },
+                ]}
+              />
+            </View>
           </View>
         </View>
-      </View>
 
-      {/* WELCOME */}
-      <View style={styles.welcome}>
-        <Text style={styles.welcomeTitle}>Welcome, Adventurer!</Text>
-
-        <Text style={styles.welcomeText}>
-          Your programming adventure begins here.
-        </Text>
-      </View>
-
-      {/* MENU */}
-      <View style={styles.menu}>
         {/* WORLD */}
         <Pressable
-          style={styles.menuButton}
+          style={styles.mainButton}
           onPress={() => router.push("/world")}
         >
-          <Text style={styles.menuIcon}>🗺️</Text>
+          <Text style={styles.buttonIcon}>🗺️</Text>
 
-          <View style={styles.menuTextContainer}>
-            <Text style={styles.menuTitle}>WORLD</Text>
+          <View>
+            <Text style={styles.buttonTitle}>WORLD</Text>
 
-            <Text style={styles.menuDescription}>Explore the coding world</Text>
+            <Text style={styles.buttonDescription}>
+              Explore the Coding Realm
+            </Text>
           </View>
-
-          <Text style={styles.arrow}>›</Text>
         </Pressable>
 
         {/* LEARN */}
         <Pressable
-          style={styles.menuButton}
+          style={styles.mainButton}
           onPress={() => router.push("/village")}
         >
-          <Text style={styles.menuIcon}>📚</Text>
+          <Text style={styles.buttonIcon}>📚</Text>
 
-          <View style={styles.menuTextContainer}>
-            <Text style={styles.menuTitle}>LEARN</Text>
+          <View>
+            <Text style={styles.buttonTitle}>LEARN</Text>
 
-            <Text style={styles.menuDescription}>
-              Study programming lessons
+            <Text style={styles.buttonDescription}>
+              Continue your programming journey
             </Text>
           </View>
-
-          <Text style={styles.arrow}>›</Text>
         </Pressable>
 
         {/* ADVENTURE */}
         <Pressable
-          style={styles.menuButton}
+          style={styles.mainButton}
           onPress={() => router.push("/village")}
         >
-          <Text style={styles.menuIcon}>⚔️</Text>
+          <Text style={styles.buttonIcon}>⚔️</Text>
 
-          <View style={styles.menuTextContainer}>
-            <Text style={styles.menuTitle}>ADVENTURE</Text>
+          <View>
+            <Text style={styles.buttonTitle}>ADVENTURE</Text>
 
-            <Text style={styles.menuDescription}>Battle enemies with code</Text>
+            <Text style={styles.buttonDescription}>
+              Complete quests and defeat enemies
+            </Text>
           </View>
-
-          <Text style={styles.arrow}>›</Text>
         </Pressable>
-      </View>
 
-      {/* DAILY QUEST */}
-      <View style={styles.questCard}>
-        <View style={styles.questInfo}>
-          <Text style={styles.questLabel}>DAILY QUEST</Text>
+        {/* DAILY QUEST */}
+        <View style={styles.dailyCard}>
+          <Text style={styles.dailyTitle}>⭐ DAILY QUEST</Text>
 
-          <Text style={styles.questTitle}>Complete your first lesson</Text>
+          <Text style={styles.dailyQuest}>Defeat the Syntax Slime</Text>
 
-          <Text style={styles.questReward}>Reward: +50 XP</Text>
+          <Text style={styles.dailyReward}>Reward: +50 XP • +25 Coins</Text>
         </View>
-
-        <Text style={styles.questIcon}>🎯</Text>
-      </View>
-    </SafeAreaView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#10131f",
-    paddingHorizontal: 20,
+    backgroundColor: "#0f172a",
   },
 
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  content: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+
+  logoSection: {
     alignItems: "center",
-    paddingTop: 20,
-    paddingBottom: 15,
+    marginTop: 25,
+    marginBottom: 20,
   },
 
   logo: {
-    color: "#ffffff",
-    fontSize: 28,
+    color: "#38bdf8",
+    fontSize: 32,
     fontWeight: "900",
     letterSpacing: 2,
   },
 
-  subtitle: {
-    color: "#8f96aa",
-    fontSize: 13,
-    marginTop: 3,
+  tagline: {
+    color: "#94a3b8",
+    fontSize: 14,
+    marginTop: 5,
   },
 
   coinBox: {
+    alignSelf: "flex-end",
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#1b2030",
-    paddingHorizontal: 12,
+    backgroundColor: "#1e293b",
+    paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
+    marginBottom: 15,
   },
 
-  coin: {
+  coinIcon: {
     fontSize: 18,
-    marginRight: 5,
+    marginRight: 6,
   },
 
   coinText: {
-    color: "#ffffff",
-    fontWeight: "700",
-    fontSize: 15,
+    color: "#facc15",
+    fontSize: 16,
+    fontWeight: "900",
   },
 
   playerCard: {
-    backgroundColor: "#1b2030",
-    borderRadius: 20,
-    padding: 18,
     flexDirection: "row",
-    alignItems: "center",
+    backgroundColor: "#1e293b",
+    borderRadius: 18,
+    padding: 18,
     borderWidth: 1,
-    borderColor: "#292f43",
+    borderColor: "#334155",
+    marginBottom: 20,
   },
 
-  character: {
-    width: 75,
-    height: 75,
-    borderRadius: 18,
-    backgroundColor: "#292f43",
+  avatar: {
+    width: 65,
+    height: 65,
+    borderRadius: 33,
+    backgroundColor: "#172554",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 15,
   },
 
-  characterEmoji: {
-    fontSize: 45,
+  avatarText: {
+    fontSize: 32,
   },
 
   playerInfo: {
     flex: 1,
+    justifyContent: "center",
   },
 
   playerName: {
     color: "#ffffff",
-    fontSize: 18,
-    fontWeight: "800",
+    fontSize: 17,
+    fontWeight: "900",
   },
 
   level: {
-    color: "#8f96aa",
-    fontSize: 12,
-    fontWeight: "700",
-    marginTop: 4,
-    marginBottom: 8,
-  },
-
-  xpContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  xpBar: {
-    flex: 1,
-    height: 8,
-    backgroundColor: "#30364a",
-    borderRadius: 10,
-    overflow: "hidden",
-    marginRight: 8,
-  },
-
-  xpProgress: {
-    width: "30%",
-    height: "100%",
-    backgroundColor: "#7c5cff",
-    borderRadius: 10,
-  },
-
-  xpText: {
-    color: "#8f96aa",
-    fontSize: 10,
-    fontWeight: "600",
-  },
-
-  welcome: {
-    paddingVertical: 20,
-  },
-
-  welcomeTitle: {
-    color: "#ffffff",
-    fontSize: 22,
-    fontWeight: "800",
-  },
-
-  welcomeText: {
-    color: "#8f96aa",
-    marginTop: 5,
+    color: "#38bdf8",
     fontSize: 13,
-  },
-
-  menu: {
-    gap: 12,
-  },
-
-  menuButton: {
-    backgroundColor: "#1b2030",
-    borderRadius: 16,
-    padding: 15,
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#292f43",
-  },
-
-  menuIcon: {
-    fontSize: 28,
-    marginRight: 15,
-  },
-
-  menuTextContainer: {
-    flex: 1,
-  },
-
-  menuTitle: {
-    color: "#ffffff",
-    fontSize: 15,
     fontWeight: "800",
-  },
-
-  menuDescription: {
-    color: "#7f879c",
-    fontSize: 11,
     marginTop: 3,
   },
 
-  arrow: {
-    color: "#7c5cff",
-    fontSize: 28,
-    marginLeft: "auto",
+  xpRow: {
+    marginTop: 8,
   },
 
-  questCard: {
-    marginTop: 15,
-    backgroundColor: "#211e32",
-    borderRadius: 16,
-    padding: 15,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#3b3459",
-  },
-
-  questInfo: {
-    flex: 1,
-  },
-
-  questLabel: {
-    color: "#7c5cff",
-    fontSize: 10,
-    fontWeight: "900",
-    letterSpacing: 1,
-  },
-
-  questTitle: {
-    color: "#ffffff",
-    fontSize: 13,
+  xpText: {
+    color: "#cbd5e1",
+    fontSize: 12,
     fontWeight: "700",
+  },
+
+  xpBackground: {
+    width: "100%",
+    height: 9,
+    backgroundColor: "#334155",
+    borderRadius: 10,
     marginTop: 5,
+    overflow: "hidden",
   },
 
-  questReward: {
-    color: "#8f96aa",
-    fontSize: 11,
-    marginTop: 4,
+  xpBar: {
+    height: "100%",
+    backgroundColor: "#38bdf8",
+    borderRadius: 10,
   },
 
-  questIcon: {
-    fontSize: 32,
-    marginLeft: 10,
+  mainButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1e293b",
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#334155",
+  },
+
+  buttonIcon: {
+    fontSize: 30,
+    marginRight: 16,
+  },
+
+  buttonTitle: {
+    color: "#ffffff",
+    fontSize: 17,
+    fontWeight: "900",
+  },
+
+  buttonDescription: {
+    color: "#94a3b8",
+    fontSize: 12,
+    marginTop: 3,
+  },
+
+  dailyCard: {
+    backgroundColor: "#422006",
+    borderWidth: 1,
+    borderColor: "#f59e0b",
+    borderRadius: 16,
+    padding: 18,
+    marginTop: 8,
+  },
+
+  dailyTitle: {
+    color: "#fbbf24",
+    fontSize: 14,
+    fontWeight: "900",
+  },
+
+  dailyQuest: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "800",
+    marginTop: 8,
+  },
+
+  dailyReward: {
+    color: "#fde68a",
+    fontSize: 12,
+    marginTop: 5,
   },
 });
