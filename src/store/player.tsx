@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   createContext,
   ReactNode,
@@ -6,6 +5,12 @@ import {
   useEffect,
   useState,
 } from "react";
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+/* ============================================================
+   PLAYER DATA
+   ============================================================ */
 
 type Player = {
   level: number;
@@ -17,12 +22,24 @@ type Player = {
   functionKingdomUnlocked: boolean;
 
   achievements: string[];
+
+  inventory: string[];
 };
+
+/* ============================================================
+   PLAYER CONTEXT
+   ============================================================ */
 
 type PlayerContextType = {
   player: Player;
 
   addRewards: (xp: number, coins: number) => void;
+
+  spendCoins: (amount: number) => boolean;
+
+  addItem: (itemId: string) => void;
+
+  hasItem: (itemId: string) => boolean;
 
   unlockAchievement: (achievementId: string) => void;
 
@@ -31,30 +48,53 @@ type PlayerContextType = {
   resetProgress: () => void;
 };
 
+/* ============================================================
+   STORAGE
+   ============================================================ */
+
 const STORAGE_KEY = "@codequest_player";
+
+/* ============================================================
+   DEFAULT PLAYER
+   ============================================================ */
 
 const defaultPlayer: Player = {
   level: 1,
+
   xp: 0,
+
   coins: 0,
 
   conditionForestUnlocked: false,
+
   loopLandsUnlocked: false,
+
   functionKingdomUnlocked: false,
 
   achievements: [],
+
+  inventory: [],
 };
 
+/* ============================================================
+   CONTEXT
+   ============================================================ */
+
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
+
+/* ============================================================
+   PROVIDER
+   ============================================================ */
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const [player, setPlayer] = useState<Player>(defaultPlayer);
 
   const [isLoaded, setIsLoaded] = useState(false);
 
-  /*
-   * LOAD SAVED PLAYER
-   */
+  /* ==========================================================
+     LOAD PLAYER
+     ========================================================== */
+
   useEffect(() => {
     const loadPlayer = async () => {
       try {
@@ -65,8 +105,12 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
           setPlayer({
             ...defaultPlayer,
+
             ...parsedPlayer,
+
             achievements: parsedPlayer.achievements ?? [],
+
+            inventory: parsedPlayer.inventory ?? [],
           });
         }
       } catch (error) {
@@ -79,9 +123,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     loadPlayer();
   }, []);
 
-  /*
-   * SAVE PLAYER
-   */
+  /* ==========================================================
+     SAVE PLAYER
+     ========================================================== */
+
   useEffect(() => {
     if (!isLoaded) {
       return;
@@ -98,9 +143,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     savePlayer();
   }, [player, isLoaded]);
 
-  /*
-   * ADD XP AND COINS
-   */
+  /* ==========================================================
+     ADD REWARDS
+     ========================================================== */
+
   const addRewards = (xp: number, coins: number) => {
     setPlayer((currentPlayer) => {
       const newXP = currentPlayer.xp + xp;
@@ -125,9 +171,60 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  /*
-   * UNLOCK ACHIEVEMENT
-   */
+  /* ==========================================================
+     SPEND COINS
+     ========================================================== */
+
+  const spendCoins = (amount: number): boolean => {
+    if (player.coins < amount) {
+      return false;
+    }
+
+    setPlayer((currentPlayer) => {
+      if (currentPlayer.coins < amount) {
+        return currentPlayer;
+      }
+
+      return {
+        ...currentPlayer,
+
+        coins: currentPlayer.coins - amount,
+      };
+    });
+
+    return true;
+  };
+
+  /* ==========================================================
+     ADD ITEM
+     ========================================================== */
+
+  const addItem = (itemId: string) => {
+    setPlayer((currentPlayer) => {
+      if (currentPlayer.inventory.includes(itemId)) {
+        return currentPlayer;
+      }
+
+      return {
+        ...currentPlayer,
+
+        inventory: [...currentPlayer.inventory, itemId],
+      };
+    });
+  };
+
+  /* ==========================================================
+     CHECK ITEM
+     ========================================================== */
+
+  const hasItem = (itemId: string) => {
+    return player.inventory.includes(itemId);
+  };
+
+  /* ==========================================================
+     ACHIEVEMENTS
+     ========================================================== */
+
   const unlockAchievement = (achievementId: string) => {
     setPlayer((currentPlayer) => {
       if (currentPlayer.achievements.includes(achievementId)) {
@@ -139,12 +236,6 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         achievementId,
       ];
 
-      /*
-       * CODEQUEST BEGINNER
-       *
-       * Automatically unlock this achievement
-       * when all four boss achievements are earned.
-       */
       const bossAchievements = [
         "first_blood",
         "logic_slayer",
@@ -171,16 +262,18 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  /*
-   * CHECK ACHIEVEMENT
-   */
+  /* ==========================================================
+     CHECK ACHIEVEMENT
+     ========================================================== */
+
   const hasAchievement = (achievementId: string) => {
     return player.achievements.includes(achievementId);
   };
 
-  /*
-   * RESET GAME
-   */
+  /* ==========================================================
+     RESET
+     ========================================================== */
+
   const resetProgress = async () => {
     try {
       await AsyncStorage.removeItem(STORAGE_KEY);
@@ -191,20 +284,35 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  /*
-   * WAIT FOR SAVED DATA
-   */
+  /* ==========================================================
+     LOADING
+     ========================================================== */
+
   if (!isLoaded) {
     return null;
   }
+
+  /* ==========================================================
+     PROVIDER
+     ========================================================== */
 
   return (
     <PlayerContext.Provider
       value={{
         player,
+
         addRewards,
+
+        spendCoins,
+
+        addItem,
+
+        hasItem,
+
         unlockAchievement,
+
         hasAchievement,
+
         resetProgress,
       }}
     >
@@ -212,6 +320,10 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     </PlayerContext.Provider>
   );
 }
+
+/* ============================================================
+   USE PLAYER
+   ============================================================ */
 
 export function usePlayer() {
   const context = useContext(PlayerContext);
