@@ -134,10 +134,39 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         return currentPlayer;
       }
 
+      const updatedAchievements = [
+        ...currentPlayer.achievements,
+        achievementId,
+      ];
+
+      /*
+       * CODEQUEST BEGINNER
+       *
+       * Automatically unlock this achievement
+       * when all four boss achievements are earned.
+       */
+      const bossAchievements = [
+        "first_blood",
+        "logic_slayer",
+        "loop_master",
+        "function_master",
+      ];
+
+      const allBossesDefeated = bossAchievements.every((id) =>
+        updatedAchievements.includes(id),
+      );
+
+      if (
+        allBossesDefeated &&
+        !updatedAchievements.includes("codequest_beginner")
+      ) {
+        updatedAchievements.push("codequest_beginner");
+      }
+
       return {
         ...currentPlayer,
 
-        achievements: [...currentPlayer.achievements, achievementId],
+        achievements: updatedAchievements,
       };
     });
   };
