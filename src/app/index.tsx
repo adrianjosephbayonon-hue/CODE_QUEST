@@ -1,31 +1,63 @@
 import { router } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+
+import { useDailyQuest } from "../store/dailyQuest";
 import { usePlayer } from "../store/player";
 
 export default function HomeScreen() {
-  const { player } = usePlayer();
+  const { player, addRewards } = usePlayer();
+
+  const { completed, completeQuest } = useDailyQuest();
+
+  /*
+   * COMPLETE DAILY QUEST
+   *
+   * The reward can only be claimed
+   * once because we check `completed`.
+   */
+  const handleDailyQuest = () => {
+    if (completed) {
+      return;
+    }
+
+    addRewards(25, 15);
+
+    completeQuest();
+  };
+
+  const currentLevelXP = player.xp % 100;
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* LOGO */}
-        <View style={styles.logoSection}>
-          <Text style={styles.logo}>CODEQUEST</Text>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* ========================= */}
+        {/* HEADER */}
+        {/* ========================= */}
 
-          <Text style={styles.tagline}>Learn to Code. Level Up.</Text>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.logo}>CODEQUEST</Text>
+
+            <Text style={styles.tagline}>Learn to Code. Level Up.</Text>
+          </View>
+
+          <View style={styles.coinContainer}>
+            <Text style={styles.coinIcon}>🪙</Text>
+
+            <Text style={styles.coins}>{player.coins}</Text>
+          </View>
         </View>
 
-        {/* COINS */}
-        <View style={styles.coinBox}>
-          <Text style={styles.coinIcon}>🪙</Text>
-
-          <Text style={styles.coinText}>{player.coins}</Text>
-        </View>
-
+        {/* ========================= */}
         {/* PLAYER CARD */}
+        {/* ========================= */}
+
         <View style={styles.playerCard}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>🧑‍💻</Text>
+          <View style={styles.avatarContainer}>
+            <Text style={styles.avatar}>🧙</Text>
           </View>
 
           <View style={styles.playerInfo}>
@@ -33,9 +65,10 @@ export default function HomeScreen() {
 
             <Text style={styles.level}>LEVEL {player.level}</Text>
 
-            {/* XP */}
-            <View style={styles.xpRow}>
-              <Text style={styles.xpText}>{player.xp % 100} / 100 XP</Text>
+            <View style={styles.xpHeader}>
+              <Text style={styles.xpLabel}>EXPERIENCE</Text>
+
+              <Text style={styles.xpValue}>{currentLevelXP} / 100 XP</Text>
             </View>
 
             <View style={styles.xpBackground}>
@@ -43,69 +76,185 @@ export default function HomeScreen() {
                 style={[
                   styles.xpBar,
                   {
-                    width: `${player.xp % 100}%`,
+                    width: `${currentLevelXP}%`,
                   },
                 ]}
               />
             </View>
+
+            <Text style={styles.totalXP}>⭐ {player.xp} TOTAL XP</Text>
           </View>
         </View>
 
-        {/* WORLD */}
-        <Pressable
-          style={styles.mainButton}
-          onPress={() => router.push("/world")}
+        {/* ========================= */}
+        {/* DAILY QUEST */}
+        {/* ========================= */}
+
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>DAILY QUEST</Text>
+
+          <Text style={styles.dailyLabel}>+ REWARDS</Text>
+        </View>
+
+        <View
+          style={[
+            styles.dailyQuestCard,
+            completed && styles.completedQuestCard,
+          ]}
         >
-          <Text style={styles.buttonIcon}>🗺️</Text>
+          <View style={styles.questIconContainer}>
+            <Text style={styles.questIcon}>{completed ? "✅" : "📜"}</Text>
+          </View>
 
-          <View>
-            <Text style={styles.buttonTitle}>WORLD</Text>
+          <View style={styles.questInfo}>
+            <Text style={styles.questTitle}>
+              {completed ? "QUEST COMPLETED" : "VARIABLE INITIATE"}
+            </Text>
 
-            <Text style={styles.buttonDescription}>
-              Explore the Coding Realm
+            <Text style={styles.questDescription}>
+              {completed
+                ? "You completed today's coding quest. Come back tomorrow for a new challenge!"
+                : "Create a variable called score and give it the value 100."}
+            </Text>
+
+            <Text style={styles.questReward}>
+              {completed ? "✓ REWARDS CLAIMED" : "⭐ +25 XP   •   🪙 +15 COINS"}
             </Text>
           </View>
+        </View>
+
+        {!completed && (
+          <Pressable style={styles.questButton} onPress={handleDailyQuest}>
+            <Text style={styles.questButtonText}>COMPLETE QUEST</Text>
+          </Pressable>
+        )}
+
+        {completed && (
+          <View style={styles.completedButton}>
+            <Text style={styles.completedButtonText}>✓ COMPLETED TODAY</Text>
+          </View>
+        )}
+
+        {/* ========================= */}
+        {/* GAME MENU */}
+        {/* ========================= */}
+
+        <Text style={styles.menuTitle}>ADVENTURE</Text>
+
+        {/* WORLD */}
+
+        <Pressable
+          style={styles.menuCard}
+          onPress={() => router.push("/world")}
+        >
+          <View style={[styles.menuIconContainer, styles.worldIconContainer]}>
+            <Text style={styles.menuIcon}>🌎</Text>
+          </View>
+
+          <View style={styles.menuInfo}>
+            <Text style={styles.menuCardTitle}>WORLD</Text>
+
+            <Text style={styles.menuDescription}>
+              Explore coding areas and unlock new programming concepts.
+            </Text>
+          </View>
+
+          <Text style={styles.arrow}>›</Text>
         </Pressable>
 
         {/* LEARN */}
+
         <Pressable
-          style={styles.mainButton}
+          style={styles.menuCard}
           onPress={() => router.push("/village")}
         >
-          <Text style={styles.buttonIcon}>📚</Text>
+          <View style={[styles.menuIconContainer, styles.learnIconContainer]}>
+            <Text style={styles.menuIcon}>📚</Text>
+          </View>
 
-          <View>
-            <Text style={styles.buttonTitle}>LEARN</Text>
+          <View style={styles.menuInfo}>
+            <Text style={styles.menuCardTitle}>LEARN</Text>
 
-            <Text style={styles.buttonDescription}>
-              Continue your programming journey
+            <Text style={styles.menuDescription}>
+              Study programming lessons and prepare for your next battle.
             </Text>
           </View>
+
+          <Text style={styles.arrow}>›</Text>
         </Pressable>
 
-        {/* ADVENTURE */}
+        {/* BATTLE */}
+
         <Pressable
-          style={styles.mainButton}
+          style={styles.menuCard}
           onPress={() => router.push("/village")}
         >
-          <Text style={styles.buttonIcon}>⚔️</Text>
+          <View style={[styles.menuIconContainer, styles.battleIconContainer]}>
+            <Text style={styles.menuIcon}>⚔️</Text>
+          </View>
 
-          <View>
-            <Text style={styles.buttonTitle}>ADVENTURE</Text>
+          <View style={styles.menuInfo}>
+            <Text style={styles.menuCardTitle}>ADVENTURE</Text>
 
-            <Text style={styles.buttonDescription}>
-              Complete quests and defeat enemies
+            <Text style={styles.menuDescription}>
+              Enter the coding realm and battle enemies using your programming
+              knowledge.
             </Text>
           </View>
+
+          <Text style={styles.arrow}>›</Text>
         </Pressable>
 
-        {/* DAILY QUEST */}
-        <View style={styles.dailyCard}>
-          <Text style={styles.dailyTitle}>⭐ DAILY QUEST</Text>
+        {/* ========================= */}
+        {/* CURRENT PROGRESS */}
+        {/* ========================= */}
 
-          <Text style={styles.dailyQuest}>Defeat the Syntax Slime</Text>
+        <View style={styles.progressCard}>
+          <Text style={styles.progressTitle}>CURRENT JOURNEY</Text>
 
-          <Text style={styles.dailyReward}>Reward: +50 XP • +25 Coins</Text>
+          <View style={styles.progressRow}>
+            <Text style={styles.progressIcon}>🏠</Text>
+
+            <View style={styles.progressInfo}>
+              <Text style={styles.progressName}>Beginner Village</Text>
+
+              <Text style={styles.progressDescription}>
+                Master the fundamentals of Java.
+              </Text>
+            </View>
+
+            <Text style={styles.progressStatus}>ACTIVE</Text>
+          </View>
+
+          <View style={styles.divider} />
+
+          <View style={styles.nextRow}>
+            <Text style={styles.nextIcon}>🌲</Text>
+
+            <View style={styles.progressInfo}>
+              <Text style={styles.nextName}>Condition Forest</Text>
+
+              <Text style={styles.nextDescription}>
+                {player.conditionForestUnlocked
+                  ? "Area unlocked!"
+                  : "Defeat the Syntax Slime."}
+              </Text>
+            </View>
+
+            <Text style={styles.nextStatus}>
+              {player.conditionForestUnlocked ? "OPEN" : "🔒"}
+            </Text>
+          </View>
+        </View>
+
+        {/* ========================= */}
+        {/* FOOTER */}
+        {/* ========================= */}
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>CODEQUEST</Text>
+
+          <Text style={styles.footerSubtext}>Learn to Code. Level Up.</Text>
         </View>
       </ScrollView>
     </View>
@@ -113,6 +262,10 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  /* ========================= */
+  /* CONTAINER */
+  /* ========================= */
+
   container: {
     flex: 1,
     backgroundColor: "#0f172a",
@@ -120,77 +273,87 @@ const styles = StyleSheet.create({
 
   content: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 45,
   },
 
-  logoSection: {
+  /* ========================= */
+  /* HEADER */
+  /* ========================= */
+
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 25,
-    marginBottom: 20,
+    marginBottom: 25,
   },
 
   logo: {
-    color: "#38bdf8",
-    fontSize: 32,
+    color: "#ffffff",
+    fontSize: 25,
     fontWeight: "900",
-    letterSpacing: 2,
+    letterSpacing: 1,
   },
 
   tagline: {
-    color: "#94a3b8",
-    fontSize: 14,
-    marginTop: 5,
+    color: "#64748b",
+    fontSize: 12,
+    marginTop: 3,
   },
 
-  coinBox: {
-    alignSelf: "flex-end",
+  coinContainer: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#1e293b",
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: "#334155",
     borderRadius: 20,
-    marginBottom: 15,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
   },
 
   coinIcon: {
-    fontSize: 18,
-    marginRight: 6,
+    fontSize: 17,
+    marginRight: 5,
   },
 
-  coinText: {
+  coins: {
     color: "#facc15",
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "900",
   },
+
+  /* ========================= */
+  /* PLAYER CARD */
+  /* ========================= */
 
   playerCard: {
     flexDirection: "row",
     backgroundColor: "#1e293b",
-    borderRadius: 18,
-    padding: 18,
     borderWidth: 1,
     borderColor: "#334155",
-    marginBottom: 20,
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 25,
   },
 
-  avatar: {
-    width: 65,
-    height: 65,
-    borderRadius: 33,
+  avatarContainer: {
+    width: 70,
+    height: 70,
+    borderRadius: 20,
     backgroundColor: "#172554",
-    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#2563eb",
     alignItems: "center",
+    justifyContent: "center",
     marginRight: 15,
   },
 
-  avatarText: {
-    fontSize: 32,
+  avatar: {
+    fontSize: 38,
   },
 
   playerInfo: {
     flex: 1,
-    justifyContent: "center",
   },
 
   playerName: {
@@ -201,89 +364,335 @@ const styles = StyleSheet.create({
 
   level: {
     color: "#38bdf8",
-    fontSize: 13,
-    fontWeight: "800",
-    marginTop: 3,
-  },
-
-  xpRow: {
-    marginTop: 8,
-  },
-
-  xpText: {
-    color: "#cbd5e1",
     fontSize: 12,
-    fontWeight: "700",
+    fontWeight: "900",
+    marginTop: 3,
+    marginBottom: 12,
+  },
+
+  xpHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 6,
+  },
+
+  xpLabel: {
+    color: "#94a3b8",
+    fontSize: 10,
+    fontWeight: "800",
+  },
+
+  xpValue: {
+    color: "#ffffff",
+    fontSize: 10,
+    fontWeight: "800",
   },
 
   xpBackground: {
-    width: "100%",
-    height: 9,
+    height: 8,
     backgroundColor: "#334155",
     borderRadius: 10,
-    marginTop: 5,
     overflow: "hidden",
   },
 
   xpBar: {
     height: "100%",
-    backgroundColor: "#38bdf8",
+    backgroundColor: "#2563eb",
     borderRadius: 10,
   },
 
-  mainButton: {
+  totalXP: {
+    color: "#facc15",
+    fontSize: 10,
+    fontWeight: "800",
+    marginTop: 6,
+  },
+
+  /* ========================= */
+  /* SECTION HEADER */
+  /* ========================= */
+
+  sectionHeader: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#1e293b",
-    borderRadius: 16,
-    padding: 18,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#334155",
+    marginBottom: 10,
   },
 
-  buttonIcon: {
-    fontSize: 30,
-    marginRight: 16,
-  },
-
-  buttonTitle: {
+  sectionTitle: {
     color: "#ffffff",
     fontSize: 17,
     fontWeight: "900",
   },
 
-  buttonDescription: {
-    color: "#94a3b8",
-    fontSize: 12,
-    marginTop: 3,
-  },
-
-  dailyCard: {
-    backgroundColor: "#422006",
-    borderWidth: 1,
-    borderColor: "#f59e0b",
-    borderRadius: 16,
-    padding: 18,
-    marginTop: 8,
-  },
-
-  dailyTitle: {
-    color: "#fbbf24",
-    fontSize: 14,
+  dailyLabel: {
+    color: "#facc15",
+    fontSize: 10,
     fontWeight: "900",
   },
 
-  dailyQuest: {
+  /* ========================= */
+  /* DAILY QUEST */
+  /* ========================= */
+
+  dailyQuestCard: {
+    flexDirection: "row",
+    backgroundColor: "#422006",
+    borderWidth: 1,
+    borderColor: "#a16207",
+    borderRadius: 18,
+    padding: 17,
+  },
+
+  completedQuestCard: {
+    backgroundColor: "#052e16",
+    borderColor: "#166534",
+  },
+
+  questIconContainer: {
+    width: 55,
+    height: 55,
+    borderRadius: 15,
+    backgroundColor: "#713f12",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 13,
+  },
+
+  questIcon: {
+    fontSize: 27,
+  },
+
+  questInfo: {
+    flex: 1,
+  },
+
+  questTitle: {
     color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "800",
+    fontSize: 15,
+    fontWeight: "900",
+    marginBottom: 5,
+  },
+
+  questDescription: {
+    color: "#fde68a",
+    fontSize: 12,
+    lineHeight: 18,
+  },
+
+  questReward: {
+    color: "#facc15",
+    fontSize: 11,
+    fontWeight: "900",
     marginTop: 8,
   },
 
-  dailyReward: {
-    color: "#fde68a",
+  questButton: {
+    backgroundColor: "#2563eb",
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: "center",
+    marginTop: 10,
+    marginBottom: 25,
+  },
+
+  questButtonText: {
+    color: "#ffffff",
+    fontSize: 13,
+    fontWeight: "900",
+  },
+
+  completedButton: {
+    backgroundColor: "#166534",
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: "center",
+    marginTop: 10,
+    marginBottom: 25,
+  },
+
+  completedButtonText: {
+    color: "#bbf7d0",
+    fontSize: 13,
+    fontWeight: "900",
+  },
+
+  /* ========================= */
+  /* ADVENTURE MENU */
+  /* ========================= */
+
+  menuTitle: {
+    color: "#ffffff",
+    fontSize: 17,
+    fontWeight: "900",
+    marginBottom: 10,
+  },
+
+  menuCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1e293b",
+    borderWidth: 1,
+    borderColor: "#334155",
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 12,
+  },
+
+  menuIconContainer: {
+    width: 55,
+    height: 55,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 14,
+  },
+
+  worldIconContainer: {
+    backgroundColor: "#172554",
+  },
+
+  learnIconContainer: {
+    backgroundColor: "#312e81",
+  },
+
+  battleIconContainer: {
+    backgroundColor: "#3b0764",
+  },
+
+  menuIcon: {
+    fontSize: 27,
+  },
+
+  menuInfo: {
+    flex: 1,
+  },
+
+  menuCardTitle: {
+    color: "#ffffff",
+    fontSize: 15,
+    fontWeight: "900",
+    marginBottom: 4,
+  },
+
+  menuDescription: {
+    color: "#94a3b8",
     fontSize: 12,
-    marginTop: 5,
+    lineHeight: 18,
+  },
+
+  arrow: {
+    color: "#64748b",
+    fontSize: 30,
+    fontWeight: "300",
+    marginLeft: 8,
+  },
+
+  /* ========================= */
+  /* CURRENT JOURNEY */
+  /* ========================= */
+
+  progressCard: {
+    backgroundColor: "#111827",
+    borderWidth: 1,
+    borderColor: "#1f2937",
+    borderRadius: 18,
+    padding: 17,
+    marginTop: 10,
+  },
+
+  progressTitle: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "900",
+    marginBottom: 15,
+  },
+
+  progressRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  progressIcon: {
+    fontSize: 25,
+    marginRight: 12,
+  },
+
+  progressInfo: {
+    flex: 1,
+  },
+
+  progressName: {
+    color: "#ffffff",
+    fontSize: 13,
+    fontWeight: "900",
+  },
+
+  progressDescription: {
+    color: "#64748b",
+    fontSize: 11,
+    marginTop: 3,
+  },
+
+  progressStatus: {
+    color: "#4ade80",
+    fontSize: 9,
+    fontWeight: "900",
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: "#1f2937",
+    marginVertical: 14,
+  },
+
+  nextRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  nextIcon: {
+    fontSize: 25,
+    marginRight: 12,
+  },
+
+  nextName: {
+    color: "#cbd5e1",
+    fontSize: 13,
+    fontWeight: "800",
+  },
+
+  nextDescription: {
+    color: "#475569",
+    fontSize: 11,
+    marginTop: 3,
+  },
+
+  nextStatus: {
+    color: "#94a3b8",
+    fontSize: 11,
+    fontWeight: "900",
+  },
+
+  /* ========================= */
+  /* FOOTER */
+  /* ========================= */
+
+  footer: {
+    alignItems: "center",
+    marginTop: 35,
+  },
+
+  footerText: {
+    color: "#334155",
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 2,
+  },
+
+  footerSubtext: {
+    color: "#1e293b",
+    fontSize: 10,
+    marginTop: 4,
   },
 });
